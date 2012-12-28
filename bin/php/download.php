@@ -12,6 +12,7 @@ if( php_sapi_name() != 'cli' ) {
 require_once( 'helpers/download.php' );
 require_once( 'lib/vk/vkapi.php' );
 
+$i = 0;
 $download = new DownloadHelper( false );
 $lists    = $download->getAllDownloadLists();
 foreach( $lists as $sessionID ) {
@@ -22,47 +23,8 @@ foreach( $lists as $sessionID ) {
 		continue;
 	}
 
-	$list['status'] = DownloadHelper::STATUS_DOWNLOADING;
-	$download->storeDownoadListInfo( $list );
-
-	foreach( $list['audios'] as $key => $audio ) {
-		if( (bool) $audio['is_downloaded'] ) {
-			continue;
-		}
-
-		if(
-			isset( $audio['errors_count'] )
-			&& (int) $audio['errors_count'] >= 3
-		) {
-			$list['audios'][ $key ]['skipped'] = 1;
-			$download->storeDownoadListInfo( $list );
-			continue;
-		}
-
-		$result = $download->downloadAudio( $audio );
-		if( $result === false ) {
-			if( isset( $audio['errors_count'] ) === false ) {
-				$audio['errors_count'] = 1;
-			} else {
-				$audio['errors_count']++;
-			}
-		} else {
-			$audio['is_downloaded'] = 1;
-		}
-		$list['audios'][ $key ] = $audio;
-
-		// Audio was not downloaded, it will be downloaded in the next run
-		if( $result === false ) {
-			$list['status'] = DownloadHelper::STATUS_CREATED;
-		}
-		$download->storeDownoadListInfo( $list );
-		if( $result === false ) {
-			exit();
-		}
-	}
-
-	$download->createZIP();
-	$list['status'] = DownloadHelper::STATUS_DOWNLOADED;
-	$download->storeDownoadListInfo( $list );
-	exit();
+	$i++;
+	exec( '$(which php) bin/php/process_list.php ' . $sessionID . ' &> /dev/null &' );
 }
+echo( $i . ' processes has been started' . "\n" );
+
