@@ -1,0 +1,7 @@
+VKSAVERHOME=/home/l0rdj/projects/vk-applications/audioplayer
+# Start downloads
+* * * * * root cd $VKSAVERHOME; /usr/bin/php download.php;
+# Remove downloads which were no changed in the past 6 hours
+10 * * * * root /usr/bin/find $VKSAVERHOME/public_html/download/*/* -maxdepth 1 -type d -cmin +360 -exec /bin/rm -rf {} \;
+# Remove download lists which were no changed in the past 2 hours
+40 * * * * root /usr/bin/find $VKSAVERHOME/cache/download_lists/* -maxdepth 1 -type f -cmin +120 -exec /bin/rm -f {} \;

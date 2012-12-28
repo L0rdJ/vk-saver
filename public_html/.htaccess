@@ -1,0 +1,10 @@
+#php_value xdebug.var_display_max_depth 10
+#php_value xdebug.var_display_max_data 200
+php_value memory_limit 32M
+php_flag display_errors on
+
+<FilesMatch "\.mp3$">
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+DirectoryIndex index.php
