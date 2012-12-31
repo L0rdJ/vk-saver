@@ -12,7 +12,7 @@
 
 		<section id="secondary_bar">
 			<div class="user">
-				{if isset( $data.user )}<p>{{$data.user.first_name}} {{$data.user.last_name}} (<a href="/?module=auth&action=logout">Logout</a>)</p>{/if}
+				{if isset( $data.user )}<p>{{$data.user.first_name}} {{$data.user.last_name}} (<a href="/?module=auth&action=logout">Выйти</a>)</p>{/if}
 			</div>
 			{{if isset( $data.path )}}
 			<div class="breadcrumbs_container">
@@ -23,7 +23,7 @@
 
 		<aside id="sidebar" class="column">
 			<form class="quick_search">
-				<input type="text" value="Quick Search" onfocus="this.value='';">
+				<input type="text" value="Поиск" onfocus="this.value='';">
 			</form>
 			<hr/>
 
@@ -31,7 +31,8 @@
 
 			<footer>
 				<hr />
-				<p><strong>Copyright &copy; 2011 Website Admin</strong></p>
+				<p>Разработал: <strong><a href="http://www.linkedin.com/in/serheydolgushev">Долгушев Сергей</a></strong></p>
+				<p>Исходный код: <strong><a href="https://github.com/L0rdJ/vk-saver">https://github.com/L0rdJ/vk-saver</a></strong></p>
 				<p>Theme by <a href="http://www.medialoot.com">MediaLoot</a></p>
 			</footer>
 		</aside><!-- end of sidebar -->

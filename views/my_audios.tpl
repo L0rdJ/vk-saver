@@ -15,7 +15,7 @@ jQuery( function() {
 
 		<header style="height: 34px;">
 			<div class="submit_link">
-				<input type="submit" class="select-all-adudio" value="Select all"> <input type="submit" value="Download selected">
+				<input type="submit" class="select-all-adudio" value="Отметить все"> <input type="submit" value="Загрузить отмеченные">
 			</div>
 		</header>
 
@@ -33,7 +33,7 @@ jQuery( function() {
 
 		<footer>
 			<div class="submit_link">
-				<input type="submit" class="select-all-adudio" value="Select all"> <input type="submit" value="Download selected">
+				<input type="submit" class="select-all-adudio" value="Отметить все"> <input type="submit" value="Загрузить отмеченные">
 			</div>
 		</footer>
 

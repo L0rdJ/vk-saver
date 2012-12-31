@@ -156,7 +156,7 @@ class DownloadHelper
 		$list = $this->getDownloadList();
 
 		$downloadDir = $this->downloadPath . $this->sessionID . '/';
-		$zipFile     = $downloadDir . 'all.zip';
+		$zipFile     = $this->getZIPFilename();
 		if( file_exists( $zipFile ) ) {
 			return true;
 		}
@@ -172,5 +172,38 @@ class DownloadHelper
 			}
 		}
 		$zip->close();
+	}
+
+	public function downloadZIP() {
+		$file = $this->getZIPFilename();
+		if( file_exists( $file ) === false ) {
+			return false;
+		}
+
+		$handler = fopen( $file, 'r' );
+		if( $handler === false ) {
+			return false;
+		}
+
+		header( 'Content-Description: File Transfer' );
+		header( 'Content-Type: application/octet-stream' );
+		header( 'Content-Disposition: attachment; filename=' . basename( $file ) );
+		header( 'Content-Transfer-Encoding: chunked' );
+		header( 'Expires: 0' );
+		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+		header( 'Pragma: public' );
+		while( feof( $handler ) === false ) {
+			echo fread( $handler, 1024 );
+			/*
+			$streamMetaData = stream_get_meta_data( $handler );
+			if( $streamMetaData['unread_bytes'] <= 0 ) {
+				break;
+			}
+			*/
+		}
+	}
+
+	private function getZIPFilename() {
+		return $this->downloadPath . $this->sessionID . '/' . 'all.zip';
 	}
 }

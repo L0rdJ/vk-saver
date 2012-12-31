@@ -22,7 +22,7 @@ class ControllerSaver extends Controller
 		self::renderView(
 			'my_audios',
 			array(
-				'path'   => 'My audios',
+				'path'   => 'Мои Аудиозаписи',
 				'audios' => self::getAllAudios()
 			)
 		);
@@ -32,14 +32,14 @@ class ControllerSaver extends Controller
 		$download = new DownloadHelper();
 		if( isset( $this->post['selected_audios'] ) ) {
 			if( $download->isActiveDownloadList() ) {
-				$this->addMessage( 'There is active download list for current session' );
+				$this->addMessage( 'У Вас есть незавершенные загрузки. Попробуйте еще раз, после их завершения.' );
 				$this->redirect( $this->getURL( 'saver', 'download' ) );
 			}
 
 			$audioIDs = (array) $this->post['selected_audios'];
-			if( count( $audioIDs ) > 5 ) {
-				$this->addMessage( 'You can download only 5 songs by one download' );
-				$audioIDs = array_slice( $audioIDs, 0, 5 );
+			if( count( $audioIDs ) > 20 ) {
+				$this->addMessage( 'Вы можете скачать только 20 песен за один раз' );
+				$audioIDs = array_slice( $audioIDs, 0, 20 );
 			}
 
 			$audios = self::getAudios( $audioIDs );
@@ -47,29 +47,43 @@ class ControllerSaver extends Controller
 				throw new Exception( 'No selected audios' );
 			}
 			$download->createDownloadList( $audios );
-			$this->addMessage( 'Download list has been created. Download will start soonly.', 'success' );
+			$this->addMessage( 'Список загрузки создан. Отмеченные аудиозаписи начнут загружаться в течении нескольих минут.', 'success' );
 		}
 
 		$list = $download->getDownloadList();
 		if( $list === false ) {
-			$this->addMessage( 'There is no active download list for current session' );
+			$this->addMessage( 'У Вас нет незавершенных загрузок' );
 			$this->redirect( $this->getURL( 'saver' ) );
 		}
 
 		if( $list['status'] !== DownloadHelper::STATUS_DOWNLOADED ) {
  			header( 'Refresh: 5' );
 		} else {
-			$this->addMessage( 'Downloading has been finished', 'success' );
+			$this->addMessage( 'Загрузка успешно окончена', 'success' );
 		}
 
 		self::renderView(
 			'download',
 			array(
-				'path'       => 'Download list',
+				'path'       => 'Загрузки',
 				'list'       => $list,
 				'session_id' => session_id()
 			)
 		);
+	}
+
+	public function doDownloadAll() {
+		$download = new DownloadHelper();
+		$list     = $download->getDownloadList();
+		if( (int) $list['status'] !== DownloadHelper::STATUS_DOWNLOADED ) {
+			$this->addMessage( 'Текущая загрузка еще не завершена' );
+			$this->redirect( $this->getURL( 'saver', 'download' ) );
+		}
+
+		set_time_limit( 3600 );
+		$download->createZIP();
+		$download->downloadZIP();
+		exit();
 	}
 
 	public static function getAllAudios() {

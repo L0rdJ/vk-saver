@@ -61,6 +61,5 @@ foreach( $list['audios'] as $key => $audio ) {
 	}
 }
 
-$download->createZIP();
 $list['status'] = DownloadHelper::STATUS_DOWNLOADED;
 $download->storeDownoadListInfo( $list );
