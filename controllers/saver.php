@@ -44,10 +44,10 @@ class ControllerSaver extends Controller
 
 			$audios = self::getAudios( $audioIDs );
 			if( count( $audios ) === 0 ) {
-				throw new Exception( 'No selected audios' );
+				throw new Exception( 'Нет выбранных аудиозписей' );
 			}
 			$download->createDownloadList( $audios );
-			$this->addMessage( 'Список загрузки создан. Отмеченные аудиозаписи начнут загружаться в течении нескольих минут.', 'success' );
+			$this->addMessage( 'Список загрузки создан. Отмеченные аудиозаписи начнут загружаться в течении нескольких минут.', 'success' );
 		}
 
 		$list = $download->getDownloadList();
@@ -86,6 +86,36 @@ class ControllerSaver extends Controller
 		exit();
 	}
 
+	public function doSearch() {
+		$q      = isset( $this->get['q'] ) ? $this->get['q'] : null;
+		$sort   = isset( $this->get['sort'] ) ? $this->get['sort'] : 2;
+		$audios = array();
+
+		if(
+			strlen( $q ) === 0
+			&& isset( $this->get['q'] )
+		) {
+			$this->addMessage( 'Не введена искомая фраза' );
+		}
+
+		if( strlen( $q ) > 0 ) {
+			$audios = self::searchAudios( $q, $sort );
+			if( count( $audios ) === 0 ) {
+				$this->addMessage( 'Ничего не найдено' );
+			}
+		}
+
+		self::renderView(
+			'search',
+			array(
+				'path'   => 'Поиск',
+				'q'      => $q,
+				'sort'   => $sort,
+				'audios' => $audios
+			)
+		);
+	}
+
 	public static function getAllAudios() {
 		$api = VKAPI::getInstance();
 		$r   = $api->request( 'audio.get', array(), -1 );
@@ -94,6 +124,29 @@ class ControllerSaver extends Controller
 		}
 		$audios = $r['response'];
 
+		return self::setAudioDurations( $audios );
+	}
+
+	public static function searchAudios( $q, $sort ) {
+		$r = VKAPI::getInstance()->request(
+			'audio.search',
+			array(
+				'q'     => $q,
+				'sort'  => (int) $sort,
+				'count' => 200
+			),
+			-1
+		);
+		if( isset( $r['error'] ) ) {
+			throw new Exception( $r['error']['error_msg'] );
+		}
+		$audios = $r['response'];
+		unset( $audios[0] );
+
+		return self::setAudioDurations( $audios );
+	}
+
+	private static function setAudioDurations( array $audios ) {
 		foreach( $audios as $key => $audio ) {
 			$h = (int) ( $audio['duration'] / 3600 );
 			$m = sprintf( '%02d', (int) ( ( $audio['duration'] / 60 ) % 60 ) );
@@ -110,8 +163,8 @@ class ControllerSaver extends Controller
 
 	public function getAudios( array $ids ) {
 		$r = VKAPI::getInstance()->request(
-			'audio.get',
-			array( 'aids' => implode( ',', $ids ) ),
+			'audio.getById',
+			array( 'audios' => implode( ',', $ids ) ),
 			3600
 		);
 		if( isset( $r['error'] ) ) {
