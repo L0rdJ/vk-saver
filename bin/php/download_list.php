@@ -13,6 +13,7 @@ if( isset( $argv[1] ) === false ) {
 	exit();
 }
 
+set_time_limit( 3600 );
 require_once( 'helpers/download.php' );
 require_once( 'lib/vk/vkapi.php' );
 

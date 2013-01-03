@@ -19,12 +19,16 @@ foreach( $lists as $sessionID ) {
 	$download->setSessionID( $sessionID );
 	$list = $download->getDownloadList();
 
-	if( (int) $list['status'] !== DownloadHelper::STATUS_CREATED ) {
-		continue;
+	if( (int) $list['status'] === DownloadHelper::STATUS_CREATED ) {
+		$i++;
+		exec( '$(which php) bin/php/download_list.php ' . $sessionID . ' &> /dev/null &' );
+	} elseif(
+		(int) $list['status'] === DownloadHelper::STATUS_DOWNLOADED
+		&& isset( $list['sync_status'] )
+		&& (int) $list['sync_status'] === DownloadHelper::SYNC_STATUS_TOKEN_STORED
+	) {
+		exec( '$(which php) bin/php/sync_list.php ' . $sessionID . ' &> /dev/null &' );
 	}
-
-	$i++;
-	exec( '$(which php) bin/php/process_list.php ' . $sessionID . ' &> /dev/null &' );
 }
 echo( $i . ' processes has been started' . "\n" );
 

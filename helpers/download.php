@@ -12,6 +12,11 @@ class DownloadHelper
 	const STATUS_DOWNLOADING = 2;
 	const STATUS_DOWNLOADED  = 3;
 
+	const SYNC_STATUS_INIT         = 1;
+	const SYNC_STATUS_TOKEN_STORED = 2;
+	const SYNC_STATUS_ACTIVE       = 3;
+	const SYNC_STATUS_COMPLETE     = 4;
+
 	private $listsPath    = null;
 	private $downloadPath = null;
 	private $sessionID    = null;
@@ -56,6 +61,19 @@ class DownloadHelper
 		return (int) $list['status'] !== self::STATUS_DOWNLOADED;
 	}
 
+	public function isActiveSyncList() {
+		$list = $this->getDownloadList();
+		if( $list === false ) {
+			return false;
+		}
+
+		if( isset( $list['sync_status'] ) === false ) {
+			return false;
+		}
+
+		return (int) $list['sync_status'] !== self::SYNC_STATUS_COMPLETE;
+	}
+
 	public function removeDownloadList() {
 		return @unlink( $this->getDownloadListFile() );
 	}
@@ -81,11 +99,15 @@ class DownloadHelper
 		chmod( $this->getDownloadListFile(), 0777 );
 
 		// Remove previously downloaded files
-		$files = glob( $this->downloadPath . $this->sessionID . '/*' );
+		$files = glob( $this->getAudioDownloadDirectory() . '/*' );
 		foreach( $files as $file ) {
 			@unlink($file);
 		}
-		@rmdir( $this->downloadPath . $this->sessionID );
+		@rmdir( $this->getAudioDownloadDirectory() );
+	}
+
+	public function getAudioDownloadDirectory() {
+		return $this->downloadPath . $this->sessionID;
 	}
 
 	public static function getAudioDownloadName( array $audio ) {
@@ -130,7 +152,7 @@ class DownloadHelper
 	}
 
 	public function downloadAudio( array $audio ) {
-		$downloadDir = $this->downloadPath . $this->sessionID . '/';
+		$downloadDir = $this->getAudioDownloadDirectory() . '/';
 		if( file_exists( $downloadDir ) === false ) {
 			mkdir( $downloadDir );
 			chmod( $downloadDir, 0777 );
@@ -155,7 +177,7 @@ class DownloadHelper
 		$zip  = new ZipArchive();
 		$list = $this->getDownloadList();
 
-		$downloadDir = $this->downloadPath . $this->sessionID . '/';
+		$downloadDir = $this->getAudioDownloadDirectory() . '/';
 		$zipFile     = $this->getZIPFilename();
 		if( file_exists( $zipFile ) ) {
 			return true;
@@ -194,16 +216,39 @@ class DownloadHelper
 		header( 'Pragma: public' );
 		while( feof( $handler ) === false ) {
 			echo fread( $handler, 1024 );
-			/*
-			$streamMetaData = stream_get_meta_data( $handler );
-			if( $streamMetaData['unread_bytes'] <= 0 ) {
-				break;
-			}
-			*/
 		}
 	}
 
 	private function getZIPFilename() {
-		return $this->downloadPath . $this->sessionID . '/' . 'all.zip';
+		return $this->getAudioDownloadDirectory() . '/all.zip';
+	}
+
+	public function startSync( array $audioIDs ) {
+		$list = $this->getDownloadList();
+		$list['sync_status'] = self::SYNC_STATUS_INIT;
+
+		foreach( $list['audios'] as $id => $audio ) {
+			if( in_array( $id, $audioIDs ) ) {
+				$list['audios'][ $id ]['is_sync_complete'] = 0;
+			}
+		}
+
+		$this->storeDownoadListInfo( $list );
+	}
+
+	public function completeSync() {
+		$list = $this->getDownloadList();
+		$list['sync_status'] = self::SYNC_STATUS_COMPLETE;
+
+		foreach( $list['audios'] as $id => $audio ) {
+			if(
+				isset( $audio['is_sync_complete'] )
+				&& (bool) $audio['is_sync_complete'] === false
+			) {
+				unset( $list['audios'][ $id ]['is_sync_complete'] );
+			}
+		}
+
+		$this->storeDownoadListInfo( $list );
 	}
 }
