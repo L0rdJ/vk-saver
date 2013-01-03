@@ -42,7 +42,17 @@ class ControllerSaver extends Controller
 				$audioIDs = array_slice( $audioIDs, 0, 20 );
 			}
 
-			$audios = self::getAudios( $audioIDs );
+			$audios = array();
+			$offset = 0;
+			$limit  = 10;
+			do {
+				$audioPartIDs = array_slice( $audioIDs, $offset, $limit );
+				$offset       += $limit;
+				if( count( $audioPartIDs ) > 0 ) {
+					$audios = array_merge( $audios, self::getAudios( $audioPartIDs ) );
+				}
+			} while( count( $audioPartIDs ) > 0 );
+
 			if( count( $audios ) === 0 ) {
 				throw new Exception( 'Нет выбранных аудиозписей' );
 			}
