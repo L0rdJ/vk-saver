@@ -1,4 +1,4 @@
-VKSAVERHOME=/home/l0rdj/projects/vk-applications/saver
+VKSAVERHOME=/srv/vhosts/vk-saver
 # Start downloads
 * * * * * root cd $VKSAVERHOME; /usr/bin/php bin/php/run.php;
 # Remove downloads which were no changed in the past 6 hours
