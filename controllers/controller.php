@@ -26,6 +26,8 @@ abstract class Controller
 			$data['user'] = $user;
 		}
 
+		$data['progress'] = DownloadHelper::getProgress();
+
 		$messages = self::getMessages();
 		self::clearMessages();
 

@@ -251,4 +251,41 @@ class DownloadHelper
 
 		$this->storeDownoadListInfo( $list );
 	}
+
+	public static function getProgress() {
+		$progress = array();
+		$download = new DownloadHelper();
+		$list     = $download->getDownloadList();
+		if( $list === false ) {
+			return $progress;
+		}
+
+		$progress['download'] = array(
+			'processed' => 0,
+			'total'     => count( $list['audios'] )
+		);
+		foreach( $list['audios'] as $item ) {
+			if( (bool) $item['is_downloaded'] ) {
+				$progress['download']['processed']++;
+			}
+		}
+
+		if( isset( $list['sync_status'] ) === false ) {
+			return $progress;
+		}
+		$progress['sync'] = array(
+			'processed' => 0,
+			'total'     => 0
+		);
+		foreach( $list['audios'] as $item ) {
+			if( isset( $item['is_sync_complete'] ) ) {
+				$progress['sync']['total']++;
+				if( (bool) $item['is_sync_complete'] ) {
+					$progress['sync']['processed']++;
+				}
+			}
+		}
+
+		return $progress;
+	}
 }

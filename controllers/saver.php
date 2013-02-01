@@ -9,7 +9,7 @@
 class ControllerSaver extends Controller
 {
 	private static $maxRecords = 5;
-	private static $maxStorage = 10;
+	private static $maxStorage = 1024;
 
 	public function __construct() {
 		parent::__construct();
