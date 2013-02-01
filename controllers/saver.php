@@ -8,6 +8,9 @@
 
 class ControllerSaver extends Controller
 {
+	private static $maxRecords = 5;
+	private static $maxStorage = 10;
+
 	public function __construct() {
 		parent::__construct();
 
@@ -31,15 +34,21 @@ class ControllerSaver extends Controller
 	public function doDownload() {
 		$download = new DownloadHelper();
 		if( isset( $this->post['selected_audios'] ) ) {
+			exec( 'du -s --block-size=1M download | nawk \'{print $1}\'', $output );
+			if( (int) $output[0] > self::$maxStorage ) {
+				$this->addMessage( 'К сожалению, сервер перегружен. Повторите попытку позже.' );
+				$this->redirect( $this->getURL( 'saver' ) );
+			}
+
 			if( $download->isActiveDownloadList() ) {
 				$this->addMessage( 'У Вас есть незавершенные загрузки. Попробуйте еще раз, после их завершения.' );
 				$this->redirect( $this->getURL( 'saver', 'download' ) );
 			}
 
 			$audioIDs = (array) $this->post['selected_audios'];
-			if( count( $audioIDs ) > 20 ) {
-				$this->addMessage( 'Вы можете скачать только 20 песен за один раз' );
-				$audioIDs = array_slice( $audioIDs, 0, 20 );
+			if( count( $audioIDs ) > self::$maxRecords ) {
+				$this->addMessage( 'Вы можете скачать только ' . self::$maxRecords . ' песен за один раз' );
+				$audioIDs = array_slice( $audioIDs, 0, self::$maxRecords );
 			}
 
 			$audios = array();
