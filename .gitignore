@@ -1,2 +1,4 @@
-public_html/download
-cache
+public_html/download/*
+cache/complie/*
+cache/download_lists/*
+cache/vk-api/*
