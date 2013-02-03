@@ -1,8 +1,8 @@
 <?php
 /**
- * @package   Project Name
- * @author    Serhey Dolgushev <dolgushev.serhey@gmail.com>
- * @date      01 Dec 2012
+ * @package VK Saver
+ * @author  Serhey Dolgushev <dolgushev.serhey@gmail.com>
+ * @date    01 Dec 2012
  **/
 
 session_start();
